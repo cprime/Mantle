@@ -48,6 +48,11 @@ static NSString * const MTLJSONAdapterThrownExceptionErrorKey = @"MTLJSONAdapter
 	return adapter.model;
 }
 
++ (id)modelOfClass:(Class)modelClass fromJSONDictionary:(NSDictionary *)JSONDictionary customMapping:(NSDictionary *)customMapping error:(NSError **)error {
+	MTLJSONAdapter *adapter = [[self alloc] initWithJSONDictionary:JSONDictionary modelClass:modelClass customMapping:customMapping error:error];
+	return adapter.model;
+}
+
 + (NSArray *)modelsOfClass:(Class)modelClass fromJSONArray:(NSArray *)JSONArray error:(NSError **)error {
 	if (JSONArray == nil || ![JSONArray isKindOfClass:NSArray.class]) {
 		if (error != NULL) {
@@ -77,6 +82,11 @@ static NSString * const MTLJSONAdapterThrownExceptionErrorKey = @"MTLJSONAdapter
 	return adapter.JSONDictionary;
 }
 
++ (NSDictionary *)JSONDictionaryFromModel:(MTLModel<MTLJSONSerializing> *)model customMapping:(NSDictionary *)customMapping {
+	MTLJSONAdapter *adapter = [[self alloc] initWithModel:model customMapping:customMapping];
+	return adapter.JSONDictionary;
+}
+
 + (NSArray *)JSONArrayFromModels:(NSArray *)models {
 	NSParameterAssert(models != nil);
 	NSParameterAssert([models isKindOfClass:NSArray.class]);
@@ -100,6 +110,13 @@ static NSString * const MTLJSONAdapterThrownExceptionErrorKey = @"MTLJSONAdapter
 }
 
 - (id)initWithJSONDictionary:(NSDictionary *)JSONDictionary modelClass:(Class)modelClass error:(NSError **)error {
+	return [self initWithJSONDictionary:JSONDictionary
+							 modelClass:modelClass
+						  customMapping:[modelClass JSONKeyPathsByPropertyKey]
+								  error:error];
+}
+
+- (id)initWithJSONDictionary:(NSDictionary *)JSONDictionary modelClass:(Class)modelClass customMapping:(NSDictionary *)customMapping error:(NSError **)error {
 	NSParameterAssert(modelClass != nil);
 	NSParameterAssert([modelClass isSubclassOfClass:MTLModel.class]);
 	NSParameterAssert([modelClass conformsToProtocol:@protocol(MTLJSONSerializing)]);
@@ -138,7 +155,7 @@ static NSString * const MTLJSONAdapterThrownExceptionErrorKey = @"MTLJSONAdapter
 	if (self == nil) return nil;
 
 	_modelClass = modelClass;
-	_JSONKeyPathsByPropertyKey = [[modelClass JSONKeyPathsByPropertyKey] copy];
+	_JSONKeyPathsByPropertyKey = [customMapping copy];
 
 	NSMutableDictionary *dictionaryValue = [[NSMutableDictionary alloc] initWithCapacity:JSONDictionary.count];
 
@@ -220,6 +237,10 @@ static NSString * const MTLJSONAdapterThrownExceptionErrorKey = @"MTLJSONAdapter
 }
 
 - (id)initWithModel:(MTLModel<MTLJSONSerializing> *)model {
+	return [self initWithModel:model customMapping:[model.class JSONKeyPathsByPropertyKey]];
+}
+
+- (id)initWithModel:(MTLModel<MTLJSONSerializing> *)model customMapping:(NSDictionary *)customMapping {
 	NSParameterAssert(model != nil);
 
 	self = [super init];
@@ -227,7 +248,7 @@ static NSString * const MTLJSONAdapterThrownExceptionErrorKey = @"MTLJSONAdapter
 
 	_model = model;
 	_modelClass = model.class;
-	_JSONKeyPathsByPropertyKey = [[model.class JSONKeyPathsByPropertyKey] copy];
+	_JSONKeyPathsByPropertyKey = [customMapping copy];
 
 	return self;
 }

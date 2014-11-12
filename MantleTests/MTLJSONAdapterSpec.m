@@ -274,5 +274,34 @@ it(@"should return an array of dictionaries from models", ^{
 	expect(JSONArray[1][@"username"]).to.equal(@"bar");
 });
 
+it(@"should accept a custom mapping dictionary", ^{
+	NSDictionary *values = @{
+							 @"username": @"foo",
+							 @"nested": @{ @"name": @"bar" },
+							 @"count": @"1337"
+							 };
+
+	NSDictionary *upValues = @{
+							 @"username": @"foo",
+							 };
+
+	NSDictionary *customMapping = @{
+									@"name":       @"username",
+									@"nestedName": NSNull.null,
+									@"weakModel":  NSNull.null,
+									@"count":      NSNull.null,
+									};
+
+	NSError *error = nil;
+	MTLTestModel *model = [MTLJSONAdapter modelOfClass:MTLSubstitutingTestModel.class fromJSONDictionary:values customMapping:customMapping error:&error];
+	expect(model).to.beKindOf(MTLTestModel.class);
+	expect(error).to.beNil();
+
+	expect(model.name).to.equal(@"foo");
+	expect(model.count).to.equal(1);
+	expect(model.nestedName).to.beNil();
+
+	expect([MTLJSONAdapter JSONDictionaryFromModel:model customMapping:customMapping]).to.equal(upValues);
+});
 
 SpecEnd

@@ -89,6 +89,23 @@ extern const NSInteger MTLJSONAdapterErrorInvalidJSONMapping;
 // occurred.
 + (id)modelOfClass:(Class)modelClass fromJSONDictionary:(NSDictionary *)JSONDictionary error:(NSError **)error;
 
+// Attempts to parse a JSON dictionary into a model object.
+//
+// modelClass     - The MTLModel subclass to attempt to parse from the JSON.
+//                  This class must conform to <MTLJSONSerializing>. This
+//                  argument must not be nil.
+// JSONDictionary - A dictionary representing JSON data. This should match the
+//                  format returned by NSJSONSerialization. If this argument is
+//                  nil, the method returns nil.
+// customMapping  - A custom mapping to use rather than the model class's
+//					JSONKeyPathsByPropertyKey.
+// error          - If not NULL, this may be set to an error that occurs during
+//                  parsing or initializing an instance of `modelClass`.
+//
+// Returns an instance of `modelClass` upon success, or nil if a parsing error
+// occurred.
++ (id)modelOfClass:(Class)modelClass fromJSONDictionary:(NSDictionary *)JSONDictionary customMapping:(NSDictionary *)customMapping error:(NSError **)error;
+
 // Attempts to parse an array of JSON dictionary objects into a model objects
 // of a specific class.
 //
@@ -113,6 +130,16 @@ extern const NSInteger MTLJSONAdapterErrorInvalidJSONMapping;
 //
 // Returns a JSON dictionary, or nil if a serialization error occurred.
 + (NSDictionary *)JSONDictionaryFromModel:(MTLModel<MTLJSONSerializing> *)model;
+
+// Converts a model into a JSON representation.
+//
+// model			- The model to use for JSON serialization. This argument must not be
+//					  nil.
+// customMapping	- A custom mapping to use rather than the model class's
+//					  JSONKeyPathsByPropertyKey.
+//
+// Returns a JSON dictionary, or nil if a serialization error occurred.
++ (NSDictionary *)JSONDictionaryFromModel:(MTLModel<MTLJSONSerializing> *)model customMapping:(NSDictionary *)customMapping;
 
 // Converts a array of models into a JSON representation.
 //
@@ -140,11 +167,38 @@ extern const NSInteger MTLJSONAdapterErrorInvalidJSONMapping;
 // occurred.
 - (id)initWithJSONDictionary:(NSDictionary *)JSONDictionary modelClass:(Class)modelClass error:(NSError **)error;
 
+// Initializes the receiver by attempting to parse a JSON dictionary into
+// a model object.
+//
+// JSONDictionary - A dictionary representing JSON data. This should match the
+//                  format returned by NSJSONSerialization. If this argument is
+//                  nil, the method returns nil and an error with code
+//                  MTLJSONAdapterErrorInvalidJSONDictionary.
+// modelClass     - The MTLModel subclass to attempt to parse from the JSON.
+//                  This class must conform to <MTLJSONSerializing>. This
+//                  argument must not be nil.
+// customMapping  - A custom mapping to use rather than the model class's
+//                  JSONKeyPathsByPropertyKey.
+// error          - If not NULL, this may be set to an error that occurs during
+//                  parsing or initializing an instance of `modelClass`.
+//
+// Returns an initialized adapter upon success, or nil if a parsing error
+// occurred.
+- (id)initWithJSONDictionary:(NSDictionary *)JSONDictionary modelClass:(Class)modelClass customMapping:(NSDictionary *)customMapping error:(NSError **)error;
+
 // Initializes the receiver with an existing model.
 //
 // model - The model to use for JSON serialization. This argument must not be
 //         nil.
 - (id)initWithModel:(MTLModel<MTLJSONSerializing> *)model;
+
+// Initializes the receiver with an existing model.
+//
+// model			- The model to use for JSON serialization. This argument must not be
+//					  nil.
+// customMapping	- A custom mapping to use rather than the model class's
+//					  JSONKeyPathsByPropertyKey.
+- (id)initWithModel:(MTLModel<MTLJSONSerializing> *)model customMapping:(NSDictionary *)customMapping;
 
 // Serializes the receiver's `model` into JSON.
 //
